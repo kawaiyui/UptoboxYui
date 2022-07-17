@@ -27,4 +27,14 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="aria2\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="aria2\aria2c.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

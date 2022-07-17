@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace UptoboxYui
 {
@@ -81,24 +83,93 @@ namespace UptoboxYui
             string mes = await HttpGet(HomeApi + "api/link/info?fileCodes=" + fileCode);
             Console.WriteLine(mes);
             Json.FilesInfo json = JsonConvert.DeserializeObject<Json.FilesInfo>(mes);
-            Console.WriteLine(Json.StatusCode(json.statusCode)+"1");
+            Console.WriteLine(Json.StatusCode(json.statusCode) + "1");
             return json;
         }
-        public static async Task<Json.GetWaitingToken> GetWaitingToken(string userToken,string fileCode)
+        public static async Task<Json.GetWaitingToken> GetWaitingToken(string userToken, string fileCode)
         {
             string mes = await HttpGet(HomeApi + "api/link?token=" + userToken + "&file_code=" + fileCode);
             Console.WriteLine(mes);
             Json.GetWaitingToken json = JsonConvert.DeserializeObject<Json.GetWaitingToken>(mes);
-            Console.WriteLine(Json.StatusCode(json.statusCode)+"2");
+            Console.WriteLine(Json.StatusCode(json.statusCode) + "2");
             return json;
         }
-        public static async Task<Json.GetDownloadLink> GetDownloadLink(string userToken,string fileCode,string waitingToken)
+        public static async Task<Json.GetDownloadLink> GetDownloadLink(string userToken, string fileCode, string waitingToken)
         {
             string mes = await HttpGet(HomeApi + "api/link?token=" + userToken + "&file_code=" + fileCode + "&waitingToken=" + waitingToken);
             Console.WriteLine(mes);
             Json.GetDownloadLink json = JsonConvert.DeserializeObject<Json.GetDownloadLink>(mes);
-            Console.WriteLine(Json.StatusCode(json.statusCode)+"3");
+            Console.WriteLine(Json.StatusCode(json.statusCode) + "3");
             return json;
+        }
+    }
+    public class HttpDownLoad
+    {
+        /// <summary>
+        /// 功能：使用Aria2c进行文件下载
+        /// 作者：黄海
+        /// 时间：2018-06-13
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="strFileName"></param>
+        /// <returns></returns>
+        public static bool DownloadFileByAria2(string url, string strFileName)
+        {
+            //var tool = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\aria2\\aria2c.exe";
+            var tool = "\\aria2\\aria2c.exe";
+            //var fi = new FileInfo(strFileName);
+            var command = " -c -s 10 -x 10  --file-allocation=none --check-certificate=false -d " + "Download" + " -o " + strFileName + " " + url;
+            using (var p = new Process())
+            {
+                RedirectExcuteProcess(p, tool, command, (s, e) => ShowInfo(url, e.Data));
+            }
+            return File.Exists(strFileName) && new FileInfo(strFileName).Length > 0;
+        }
+        private static void ShowInfo(string url, string a)
+        {
+            if (a == null) return;
+
+            const string re1 = ".*?"; // Non-greedy match on filler
+            const string re2 = "(\\(.*\\))"; // Round Braces 1
+
+            var r = new Regex(re1 + re2, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m = r.Match(a);
+            if (m.Success)
+            {
+                var rbraces1 = m.Groups[1].ToString().Replace("(", "").Replace(")", "").Replace("%", "").Replace("s", "0");
+                if (rbraces1 == "OK")
+                {
+                    rbraces1 = "100";
+                }
+                Console.WriteLine(a);
+                Console.WriteLine(DateTime.Now.ToString().Replace("/", "-") + "    " + url + "    下载进度:" + rbraces1 + "%");
+            }
+        }
+
+        /// <summary>
+        /// 功能：重定向执行
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="exe"></param>
+        /// <param name="arg"></param>
+        /// <param name="output"></param>
+        private static void RedirectExcuteProcess(Process p, string exe, string arg, DataReceivedEventHandler output)
+        {
+            p.StartInfo.FileName = exe;
+            p.StartInfo.Arguments = arg;
+
+            p.StartInfo.UseShellExecute = false;    //输出信息重定向
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.RedirectStandardError = true;
+            p.StartInfo.RedirectStandardOutput = true;
+
+            p.OutputDataReceived += output;
+            p.ErrorDataReceived += output;
+
+            p.Start();                    //启动线程
+            p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
+            p.WaitForExit();            //等待进程结束
         }
     }
     public class Json
@@ -150,6 +221,7 @@ namespace UptoboxYui
             };
             return status[Code];
         }
+        
         public class FilesInfo
         {
             public int statusCode { get; set; }

@@ -67,7 +67,10 @@ namespace UptoboxYui
                     await WaitTask(b.data.waiting);
                 }
                 Json.GetDownloadLink c = await Api.GetDownloadLink(userToken, fileCode, b.data.waitingToken);
+
                 Console.WriteLine(c.data.dlLink);
+
+                bool abc =  HttpDownLoad.DownloadFileByAria2(c.data.dlLink, a.data.list[0].file_name);
 
             }
             public static async Task WaitTask(int time)
