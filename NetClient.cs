@@ -26,7 +26,7 @@ namespace UptoboxYui
                 //获取http状态码
                 //Console.WriteLine(Convert.ToInt32(response.StatusCode));
 
-                //成功后清除输出的等待文本动画
+                //成功后清除因异常输出的等待文本动画
                 if (response.IsSuccessStatusCode)
                 {
                     if (forint > 1)
@@ -83,7 +83,8 @@ namespace UptoboxYui
             string mes = await HttpGet(HomeApi + "api/link/info?fileCodes=" + fileCode);
             Console.WriteLine(mes);
             Json.FilesInfo json = JsonConvert.DeserializeObject<Json.FilesInfo>(mes);
-            Console.WriteLine(Json.StatusCode(json.statusCode) + "1");
+            Json.StatusCode(json.statusCode);
+            Console.WriteLine(Json.StatusCode(json.statusCode)+"1");
             return json;
         }
         public static async Task<Json.GetWaitingToken> GetWaitingToken(string userToken, string fileCode)
@@ -91,7 +92,8 @@ namespace UptoboxYui
             string mes = await HttpGet(HomeApi + "api/link?token=" + userToken + "&file_code=" + fileCode);
             Console.WriteLine(mes);
             Json.GetWaitingToken json = JsonConvert.DeserializeObject<Json.GetWaitingToken>(mes);
-            Console.WriteLine(Json.StatusCode(json.statusCode) + "2");
+            Json.StatusCode(json.statusCode);
+            Console.WriteLine(Json.StatusCode(json.statusCode)+"2");
             return json;
         }
         public static async Task<Json.GetDownloadLink> GetDownloadLink(string userToken, string fileCode, string waitingToken)
@@ -99,7 +101,8 @@ namespace UptoboxYui
             string mes = await HttpGet(HomeApi + "api/link?token=" + userToken + "&file_code=" + fileCode + "&waitingToken=" + waitingToken);
             Console.WriteLine(mes);
             Json.GetDownloadLink json = JsonConvert.DeserializeObject<Json.GetDownloadLink>(mes);
-            Console.WriteLine(Json.StatusCode(json.statusCode) + "3");
+            Json.StatusCode(json.statusCode);
+            Console.WriteLine(Json.StatusCode(json.statusCode)+"3");
             return json;
         }
     }
